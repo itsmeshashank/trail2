@@ -1,0 +1,71 @@
+---
+title: "Rmarkdown Practice"
+author: "Shashank Jain"
+date: "July 17, 2018"
+output: html_document
+---
+
+#### This is a sample Rmarkdown file. I have used a dataset from on criminal violations and here is the analysis.
+
+Load all the necesary library to execute your code
+
+```{r include=FALSE}
+
+library(ggplot2)
+library(dplyr)
+library(plotrix)
+setwd("C:/Users/Shashank Jain/Desktop/Study Material/RA Work/RMarkdown/Rmarkdown2/trail2")
+violations <- read.csv("Code_violations.csv", header = T, stringsAsFactors = F)
+
+
+```
+
+
+# Summary
+```{r}
+summary(violations)
+```
+
+
+# Plots
+```{r}
+
+neighboorhood  <- aggregate(rep(1, length(violations$property_neighborhood)),
+                             by=list(violations$property_neighborhood), sum)
+as.data.frame(neighboorhood)
+
+neighboorhood <- neighboorhood[neighboorhood$x >= 300,]
+
+ggplot(data = neighboorhood,aes(x=neighboorhood$Group.1,y=neighboorhood$x))+
+  geom_bar(stat = "identity",fill="steelblue") +
+  xlab("Neighborhood")+
+  ylab("Count")+
+  ggtitle("Neighborhoods with highest number of voilations") +
+  geom_text(aes(label=x), position=position_dodge(width=.9), hjust=2.5)+
+  coord_flip() + theme_bw()
+```
+
+
+```{r}
+northside <- violations[violations$property_neighborhood=="Northside",]
+
+z <- northside %>% 
+  group_by(northside$violation_status) %>% 
+  summarise(count=n())
+z <- z[1:2,]
+z
+z$prop<- paste(round((z$count / sum(z$count) * 100),1), "%", sep="")
+
+slices<- z$count
+labels <- z$count
+plotrix::pie3D(slices,
+               labels = z$prop,
+               explode=0.1,
+               col=c("red", "steelblue"),
+              start= pi/2, main = "Northside Violation Status")
+legend("topright", legend=c("Closed", "Open"),
+       fill=c("red", "steelblue"),
+              bty="n")
+
+```
+
